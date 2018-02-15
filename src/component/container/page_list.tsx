@@ -15,12 +15,14 @@ export interface PageListItemProps {
 	pageID: string;
 	name: string;
 	pageRef: PageRef;
+	projectPages: PageRef[];
 	store: Store;
 }
 
 @observer
 export class PageListItem extends React.Component<PageListItemProps> {
 	@MobX.observable protected pageElementEditable: boolean = false;
+	@MobX.observable protected pageNameError: boolean = false;
 	@MobX.observable
 	protected pageNameInputValue: string = this.pageNameInputValue || this.props.name;
 
@@ -38,13 +40,14 @@ export class PageListItem extends React.Component<PageListItemProps> {
 		return (
 			<DropdownItemEditableLink
 				editable={this.pageElementEditable}
+				error={this.pageNameError}
 				focused={this.pageElementEditable}
+				handleBlur={this.handleBlur}
 				handleChange={this.handleInputChange}
 				handleClick={this.handlePageClick}
 				handleDoubleClick={this.handlePageDoubleClick}
 				handleKeyDown={this.handlePageKeyDown}
 				name={this.props.name}
-				handleBlur={this.handleBlur}
 				value={this.pageNameInputValue}
 			/>
 		);
@@ -81,8 +84,18 @@ export class PageListItem extends React.Component<PageListItemProps> {
 					return;
 				}
 
-				this.renamePage(this.pageNameInputValue);
-				this.pageElementEditable = false;
+				const pageOfSameName = this.props.projectPages.find(
+					(page: PageRef) => page.getName() === this.pageNameInputValue
+				);
+
+				if (!pageOfSameName) {
+					this.renamePage(this.pageNameInputValue);
+					this.pageElementEditable = false;
+					this.pageNameError = false;
+				} else {
+					this.pageNameError = true;
+					console.log(this.pageNameError);
+				}
 				break;
 
 			default:
@@ -135,6 +148,7 @@ export class PageList extends React.Component<PageListProps> {
 						name={page.getName()}
 						pageID={page.getId()}
 						pageRef={page}
+						projectPages={this.getProjectPages()}
 						store={this.props.store}
 					/>
 				))}

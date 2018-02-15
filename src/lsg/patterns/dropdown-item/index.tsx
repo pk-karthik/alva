@@ -1,4 +1,5 @@
 import { Color, colors } from '../colors';
+
 import { Icon, IconName, Size as IconSize } from '../icons';
 import Input, { InputTypes } from '../input';
 import * as React from 'react';
@@ -8,12 +9,33 @@ import styled from 'styled-components';
 export interface DropdownItemProps {
 	// active?: boolean;
 	color?: Color;
+	error?: boolean;
 	name: string;
 	icon?: IconName;
 	handleClick?: React.MouseEventHandler<HTMLElement>;
 }
+
+export interface DropdownItemEditableProps {
+	color?: Color;
+	editable: boolean;
+	error?: boolean;
+	name: string;
+	icon?: IconName;
+	focused: boolean;
+	handleChange?: React.ChangeEventHandler<HTMLInputElement>;
+	handleClick: React.MouseEventHandler<HTMLElement>;
+	handleDoubleClick: React.MouseEventHandler<HTMLElement>;
+	handleKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
+	handleBlur?: React.FocusEventHandler<HTMLInputElement>;
+	value?: string;
+}
+
 export interface StyledDropdownItemLinkProps {
 	color?: Color;
+}
+
+export interface StyledDropdownItemInputProps {
+	error: boolean;
 }
 
 export interface DropdownItemEditableProps {
@@ -47,8 +69,8 @@ const StyledDropdownItemLink = styled.a`
 	padding-bottom: ${getSpace(SpaceSize.S)}px;
 	font-size: 12px;
 	cursor: pointer;
-	${(props: StyledDropdownItemLinkProps) =>
-		props.color ? `color: ${props.color.toString()}` : 'color: inherit'};
+	color: ${(props: StyledDropdownItemLinkProps) =>
+		props.color ? `${props.color.toString()}` : 'inherit'};
 
 	:hover {
 		color: ${colors.blue40.toString()};
@@ -84,7 +106,8 @@ const StyledDropdownItemInput = styled(Input)`
 	font-size: 12px;
 
 	::placeholder {
-		color: ${colors.grey60.toString()};
+		color: ${(props: StyledDropdownItemInputProps) =>
+			props.error ? 'red' : `${colors.grey60.toString()}`};
 	}
 	:hover {
 		::placeholder {
@@ -129,22 +152,26 @@ export class DropdownItemLinkAttributeItem extends React.Component {
 
 export const DropdownItemEditableLink: React.StatelessComponent<DropdownItemEditableProps> = (
 	props
-): JSX.Element => (
-	<StyledDropdownItem onDoubleClick={props.handleDoubleClick}>
-		{!props.editable ? (
-			<StyledDropdownItemLink onClick={props.handleClick}>
-				{props.icon && <StyledDropdownItemIcon size={IconSize.S} name={props.icon} />}
-				{props.name}
-			</StyledDropdownItemLink>
-		) : (
-			<StyledDropdownItemInput
-				focused={props.focused}
-				handleChange={props.handleChange}
-				handleKeyDown={props.handleKeyDown}
-				handleBlur={props.handleBlur}
-				type={InputTypes.string}
-				value={props.value}
-			/>
-		)}
-	</StyledDropdownItem>
-);
+): JSX.Element => {
+	const error = props.error || false;
+	return (
+		<StyledDropdownItem onDoubleClick={props.handleDoubleClick}>
+			{!props.editable ? (
+				<StyledDropdownItemLink onClick={props.handleClick}>
+					{props.icon && <StyledDropdownItemIcon size={IconSize.S} name={props.icon} />}
+					{props.name}
+				</StyledDropdownItemLink>
+			) : (
+				<StyledDropdownItemInput
+					error={error}
+					focused={props.focused}
+					handleChange={props.handleChange}
+					handleKeyDown={props.handleKeyDown}
+					handleBlur={props.handleBlur}
+					type={InputTypes.string}
+					value={props.value}
+				/>
+			)}
+		</StyledDropdownItem>
+	);
+};
